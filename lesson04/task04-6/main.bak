@@ -1,0 +1,72 @@
+package main
+
+import (
+	"fmt"
+	"math/big"
+	"time"
+)
+
+func main() {
+	a, b := 0, 1
+	for i := range 24 {
+		fmt.Printf("fib%d: %d\n", i, a)
+		a, b = b, a+b
+	}
+
+	limit := 100000
+
+	fmt.Printf("\nfib%d:\n", limit)
+	t, r := wrapSimple(limit)
+	fmt.Printf("Simple takes %d ms with result %d\n\n", t, r)
+	t, r = wrapClosure(limit)
+	fmt.Printf("Closure takes %d ms with result %d\n\n", t, r)
+	t, r = wrapRecursive(limit)
+	fmt.Printf("Recursive with cache takes %d ms with result %d\n", t, r)
+}
+
+func wrapSimple(num int) (int64, *big.Int) {
+	start := time.Now()
+	a, b := big.NewInt(0), big.NewInt(1)
+	for _ = range num - 1 {
+		a, b = b, big.NewInt(0).Add(a, b)
+	}
+	return time.Since(start).Milliseconds(), b
+}
+
+func wrapClosure(num int) (int64, *big.Int) {
+	start := time.Now()
+	var res *big.Int
+	f := fibClosure()
+	for x, n := f(); n < num-1; x, n = f() {
+		if n == num-2 {
+			res = x
+		}
+	}
+	return time.Since(start).Milliseconds(), res
+}
+
+func fibClosure() func() (*big.Int, int) {
+	a, b := big.NewInt(0), big.NewInt(1)
+	n := 0
+	return func() (*big.Int, int) {
+		a, b = b, a.Add(a, b)
+		n++
+		return a, n
+	}
+}
+
+func wrapRecursive(num int) (int64, *big.Int) {
+	start := time.Now()
+	return time.Since(start).Milliseconds(), fibRecursive(num)
+}
+
+var cache = map[int]*big.Int{0: big.NewInt(0), 1: big.NewInt(1)}
+
+func fibRecursive(n int) *big.Int {
+	if f, ok := cache[n]; ok {
+		return f
+	} else {
+		cache[n] = big.NewInt(0).Add(fibRecursive(n-2), fibRecursive(n-1))
+		return cache[n]
+	}
+}
