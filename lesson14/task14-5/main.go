@@ -43,9 +43,9 @@ func main() {
 		}
 		fmt.Println("завершение работы горутины_2")
 	}()
-	//time.Sleep(5 * time.Second)
 	stop <- struct{}{}
 	stop <- struct{}{}
+	time.Sleep(5 * time.Second)
 	time.Sleep(time.Second)
 	fmt.Println("завершение работы главной горутины")
 }
