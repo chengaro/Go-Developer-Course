@@ -15,7 +15,10 @@ func main() {
 		i := i
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
+			defer func() {
+				fmt.Println("stop горутина:", i)
+				wg.Done()
+			}()
 			for {
 				fmt.Println("сложные вычисления горутины:", i)
 				time.Sleep(time.Second)
